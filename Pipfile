@@ -1,0 +1,18 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+python-language-server = "*"
+flake8 = "*"
+mypy = "*"
+yapf = "*"
+
+[packages]
+torch = "==1.2.0"
+torchvision = "==0.4.0"
+torchmeta = "*"
+
+[requires]
+python_version = "3.6"
