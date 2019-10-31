@@ -1,7 +1,7 @@
 import torch
 
 from meta_occc.models import EmbeddingNet, ResNet12
-from meta_occc.protonet import OneClassPrototypicalNet
+from meta_occc.methods import OneClassPrototypicalNet, MetaSVDD
 from meta_occc import utils
 
 
@@ -23,12 +23,19 @@ def train(args):
 
     channels = 1 if args.dataset == 'omniglot' else 3
     if args.model == 'embedding':
-        model = OneClassPrototypicalNet(EmbeddingNet(channels, 64))
+        model = EmbeddingNet(channels, 64)
     elif args.model == 'resnet12':
-        model = OneClassPrototypicalNet(ResNet12(channels))
+        model = ResNet12(channels)
     else:
         raise KeyError(f'Unsupported model "{args.model}.'
                        'Options are "embedding" and "resnet12".')
+    if args.method == 'meta_svdd':
+        model = MetaSVDD(model)
+    elif args.method == 'protonet':
+        model = OneClassPrototypicalNet(model)
+    else:
+        raise KeyError(f'Unsupported method "{args.method}.'
+                       'Options are "meta_svdd" and "protonet".')
     model.to(device=args.device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -80,6 +87,12 @@ def parse_args():
                         choices=('embedding', 'resnet12'),
                         help='Model architecture (Default: "embedding").')
     parser.add_argument(
+        '--method',
+        type=str,
+        default='meta_svdd',
+        choices=('protonet', 'meta_svdd'),
+        help='Meta one-class classification method (Default: "meta_svdd").')
+    parser.add_argument(
         '--shot',
         type=int,
         default=5,
@@ -95,8 +108,8 @@ def parse_args():
         help='Number of examples in each query set (Default: 10).')
     parser.add_argument('--val_episodes',
                         type=int,
-                        default=100,
-                        help='Number of validation episodes (Default: 100).')
+                        default=500,
+                        help='Number of validation episodes (Default: 500).')
     parser.add_argument('--learning_rate',
                         type=float,
                         default=5e-4,

@@ -13,6 +13,11 @@ yapf = "*"
 torch = "==1.2.0"
 torchvision = "==0.4.0"
 torchmeta = "*"
+qpth = "*"
+cvxpy = "*"
 
 [requires]
 python_version = "3.6"
+
+[scripts]
+train = "python -m meta_occc.train"
