@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 
 from meta_occc.models import EmbeddingNet, ResNet12
@@ -41,7 +42,11 @@ def train(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
     step = 1
-    while True:
+    best_lb = 0.
+    best_mean = 0.
+    faults = 0
+    training = True
+    while training:
         for batch in train_loader:
             (support_inputs, query_inputs,
              query_labels) = utils.to_one_class_batch(batch, args.shot)
@@ -64,6 +69,23 @@ def train(args):
                                             args.val_episodes, args.shot,
                                             args.device)
                 print(f'Accuracy = {mean:.2f} ± {ci95:.2f}%')
+                lb = mean - ci95
+                if lb > best_lb or (np.isclose(lb, best_lb)
+                                    and mean > best_mean):
+                    print('New best')
+                    best_lb = lb
+                    best_mean = mean
+                    faults = 0
+                    torch.save(model.state_dict(), args.save_path)
+                else:
+                    faults += 1
+                    print(f'{faults} fault{"s" if faults > 1 else ""}')
+                    if faults >= args.patience:
+                        ci95 = best_mean - lb
+                        print('Training finished.'
+                              f'Best = {best_mean:.2f} ± {ci95:.2f}%')
+                        training = False
+                        break
 
             step += 1
 
@@ -114,6 +136,15 @@ def parse_args():
                         type=float,
                         default=5e-4,
                         help='Learning rate (Default: 5e-4)')
+    parser.add_argument('--patience',
+                        type=int,
+                        default=10,
+                        help='Early stopping patience (Default: 10).')
+    parser.add_argument(
+        '--save_path',
+        type=str,
+        default='model.pth',
+        help='Path in which to save model (Default: "model.pth").')
     parser.add_argument('--use_cuda',
                         action='store_true',
                         help='Use CUDA if available.')

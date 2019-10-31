@@ -21,3 +21,4 @@ python_version = "3.6"
 
 [scripts]
 train = "python -m meta_occc.train"
+evaluate = "python -m meta_occc.evaluate"
