@@ -4,12 +4,12 @@ from torch import nn
 from qpth.qp import QPFunction
 
 
-def batch_svdd(inputs: torch.Tensor) -> torch.Tensor:
+def batch_svdd(inputs: torch.Tensor, eps: float) -> torch.Tensor:
     """TODO"""
     shot = inputs.shape[1]
 
     kernel_matrices = torch.bmm(inputs, inputs.transpose(1, 2))
-    # kernel_matrices += torch.eye(shot)
+    kernel_matrices += eps * torch.eye(shot)
     kernel_diags = torch.diagonal(kernel_matrices, dim1=-2, dim2=-1)
     Q = 2 * kernel_matrices
     p = -kernel_diags
@@ -34,15 +34,16 @@ def batch_svdd(inputs: torch.Tensor) -> torch.Tensor:
 
 class MetaSVDD(nn.Module):
     """TODO"""
-    def __init__(self, embedding_net: nn.Module) -> None:
+    def __init__(self, embedding_net: nn.Module, eps: float = 1e-6) -> None:
         super(MetaSVDD, self).__init__()
         self._embedding_net = embedding_net
+        self._eps = eps
         self._loss = nn.BCEWithLogitsLoss()
 
     def forward(self, support_inputs, query_inputs):
         """TODO"""
         support_embeddings = self._embedding_net(support_inputs)
-        centers = batch_svdd(support_embeddings)
+        centers = batch_svdd(support_embeddings, self._eps)
 
         query_embeddings = self._embedding_net(query_inputs)
         logits = -torch.sum(
