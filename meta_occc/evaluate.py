@@ -50,7 +50,7 @@ def parse_args():
         '--dataset',
         type=str,
         default='omniglot',
-        choices=('omniglot', 'miniimagenet', 'tieredimagenet'),
+        choices=('omniglot', 'miniimagenet', 'tieredimagenet', 'cifar_fs'),
         help='Dataset in which to train the model (Default: "omniglot").')
     parser.add_argument('--model',
                         type=str,

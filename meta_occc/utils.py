@@ -3,7 +3,12 @@ from typing import Dict, Iterable, List, Optional, Tuple
 import numpy as np
 import torch
 
-from torchmeta.datasets.helpers import omniglot, miniimagenet, tieredimagenet
+from torchmeta.datasets.helpers import (
+    omniglot,
+    miniimagenet,
+    tieredimagenet,
+    cifar_fs,
+)
 from torchmeta.utils.data import BatchMetaDataLoader
 
 
@@ -79,12 +84,13 @@ def get_dataset(dataset_id: str,
     datasets = {
         'omniglot': omniglot,
         'miniimagenet': miniimagenet,
-        'tieredimagenet': tieredimagenet
+        'tieredimagenet': tieredimagenet,
+        'cifar_fs': cifar_fs
     }
     if dataset_id not in datasets:
         raise KeyError(
             f'"{dataset_id}" not recognized. Options are "omniglot",'
-            '"miniimagenet", "tieredimagenet"')
+            '"miniimagenet", "tieredimagenet", and "cifar_fs"')
 
     dataset = datasets[dataset_id](folder,
                                    shot,
