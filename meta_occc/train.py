@@ -81,9 +81,9 @@ def train(args):
                     faults += 1
                     print(f'{faults} fault{"s" if faults > 1 else ""}')
                     if faults >= args.patience:
-                        ci95 = best_mean - lb
+                        ci95 = best_mean - best_lb
                         print('Training finished.'
-                              f'Best = {best_mean:.2f} ± {ci95:.2f}%')
+                              f' Best = {best_mean:.2f} ± {ci95:.2f}%')
                         training = False
                         break
 
