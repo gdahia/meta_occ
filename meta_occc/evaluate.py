@@ -31,7 +31,8 @@ def evaluate(args):
     else:
         raise KeyError(f'Unsupported method "{args.method}.'
                        'Options are "meta_svdd" and "protonet".')
-    model.load_state_dict(torch.load(args.model_path))
+    model.load_state_dict(torch.load(args.model_path,
+                                     map_location=args.device))
     model.to(device=args.device)
 
     mean, ci95 = utils.evaluate(model, test_loader, args.episodes, args.shot,
