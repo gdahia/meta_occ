@@ -12,9 +12,10 @@ yapf = "*"
 [packages]
 torch = "==1.2.0"
 torchvision = "==0.4.0"
-crayons = { git="https://github.com/tristandeleu/pytorch-meta", ref="6ed465ac85ac5925a7a15d8bf520793d1afad426" }
+crayons = {git = "https://github.com/tristandeleu/pytorch-meta",ref = "6ed465ac85ac5925a7a15d8bf520793d1afad426"}
 qpth = "*"
 cvxpy = "*"
+scikit-learn = "*"
 
 [requires]
 python_version = "3.6"

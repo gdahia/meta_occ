@@ -1,3 +1,4 @@
+from statistics import median_low
 import torch
 
 from meta_occc.models import EmbeddingNet, ResNet12
@@ -6,16 +7,6 @@ from meta_occc import utils
 
 
 def evaluate(args):
-    test_loader = utils.get_dataset(args.dataset,
-                                    args.dataset_folder,
-                                    args.shot,
-                                    args.query_size,
-                                    args.batch_size,
-                                    True,
-                                    train=args.split == 'train',
-                                    val=args.split == 'val',
-                                    test=args.split == 'test')
-
     channels = 1 if args.dataset == 'omniglot' else 3
     if args.model == 'embedding':
         model = EmbeddingNet(channels, 64)
@@ -24,6 +15,7 @@ def evaluate(args):
     else:
         raise KeyError(f'Unsupported model "{args.model}.'
                        'Options are "embedding" and "resnet12".')
+
     if args.method == 'meta_svdd':
         model = MetaSVDD(model)
     elif args.method == 'protonet':
@@ -35,9 +27,47 @@ def evaluate(args):
                                      map_location=args.device))
     model.to(device=args.device)
 
-    mean, ci95 = utils.evaluate(model, test_loader, args.episodes, args.shot,
-                                args.device)
-    print(f'Test accuracy = {mean:.2f} ± {ci95:.2f}%')
+    if args.metric == 'acc':
+        test_loader = utils.get_dataset_loader(args.dataset,
+                                               args.dataset_folder,
+                                               args.shot,
+                                               args.query_size,
+                                               args.batch_size,
+                                               True,
+                                               train=args.split == 'train',
+                                               val=args.split == 'val',
+                                               test=args.split == 'test')
+        mean, ci95 = utils.evaluate(model, test_loader, args.episodes,
+                                    args.shot, args.device)
+        print(f'{args.split} accuracy = {100*mean:.2f} ± {100*ci95:.2f}%')
+    else:
+        dataset = utils.get_dataset(args.dataset,
+                                    args.dataset_folder,
+                                    args.shot,
+                                    args.query_size,
+                                    True,
+                                    train=args.split == 'train',
+                                    val=args.split == 'val',
+                                    test=args.split == 'test')
+        means, stds = utils.auc(model,
+                                dataset,
+                                args.episodes,
+                                args.shot,
+                                device=args.device)
+        for i, (mean, std) in enumerate(zip(means, stds), 1):
+            print(f'{args.split} AUC for class {i} = '
+                  f'{100*mean:.2f} ± {100*std:.2f}%')
+
+        min_mean, min_mean_std = min(zip(means, stds))
+        median_mean, median_mean_std = median_low(zip(means, stds))
+        max_mean, max_mean_std = max(zip(means, stds))
+        print()
+        print(f'Minimum {args.split} class mean AUC '
+              f'= {100*min_mean:.2f} ± {100*min_mean_std:.2f}%')
+        print(f'Median {args.split} class mean AUC '
+              f'= {100*median_mean:.2f} ± {100*median_mean_std:.2f}%')
+        print(f'Maximum {args.split} class mean AUC '
+              f'= {100*max_mean:.2f} ± {100*max_mean_std:.2f}%')
 
 
 def parse_args():
@@ -85,12 +115,17 @@ def parse_args():
                         help='Dataset split to evaluate (Default: "test").')
     parser.add_argument('--episodes',
                         type=int,
-                        default=10_000,
-                        help='Number of evaluation episodes (Default: 10000).')
+                        help='Number of evaluation episodes (Default:'
+                        ' 10,000 for accuracy, 10 for AUC).')
     parser.add_argument('--model_path',
                         type=str,
                         required=True,
                         help='Path to saved trained model.')
+    parser.add_argument('--metric',
+                        type=str,
+                        default='acc',
+                        choices=('acc', 'auc'),
+                        help='Evaluation metric (Default: "acc").')
     parser.add_argument('--use_cuda',
                         action='store_true',
                         help='Use CUDA if available.')
@@ -98,6 +133,8 @@ def parse_args():
     args = parser.parse_args()
     args.device = torch.device(
         'cuda' if args.use_cuda and torch.cuda.is_available() else 'cpu')
+    if not args.episodes:
+        args.episodes = 10 if args.metric == 'auc' else 10_000
 
     return args
 

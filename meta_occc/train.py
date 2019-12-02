@@ -7,20 +7,20 @@ from meta_occc import utils
 
 
 def train(args):
-    train_loader = utils.get_dataset(args.dataset,
-                                     args.dataset_folder,
-                                     args.shot,
-                                     args.query_size,
-                                     args.batch_size,
-                                     True,
-                                     train=True)
-    val_loader = utils.get_dataset(args.dataset,
-                                   args.dataset_folder,
-                                   args.shot,
-                                   args.query_size,
-                                   args.batch_size,
-                                   True,
-                                   val=True)
+    train_loader = utils.get_dataset_loader(args.dataset,
+                                            args.dataset_folder,
+                                            args.shot,
+                                            args.query_size,
+                                            args.batch_size,
+                                            True,
+                                            train=True)
+    val_loader = utils.get_dataset_loader(args.dataset,
+                                          args.dataset_folder,
+                                          args.shot,
+                                          args.query_size,
+                                          args.batch_size,
+                                          True,
+                                          val=True)
 
     channels = 1 if args.dataset == 'omniglot' else 3
     if args.model == 'embedding':
@@ -30,6 +30,7 @@ def train(args):
     else:
         raise KeyError(f'Unsupported model "{args.model}.'
                        'Options are "embedding" and "resnet12".')
+
     if args.method == 'meta_svdd':
         model = MetaSVDD(model)
     elif args.method == 'protonet':

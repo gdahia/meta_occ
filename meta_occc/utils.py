@@ -2,6 +2,8 @@ from typing import Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import torch
+from torch.utils.data.dataloader import default_collate
+from sklearn.metrics import roc_auc_score
 
 from torchmeta.datasets.helpers import (
     omniglot,
@@ -9,7 +11,7 @@ from torchmeta.datasets.helpers import (
     tieredimagenet,
     cifar_fs,
 )
-from torchmeta.utils.data import BatchMetaDataLoader
+from torchmeta.utils.data import BatchMetaDataLoader, CombinationMetaDataset
 
 
 # TODO: create test for `to_one_class_batch`
@@ -20,11 +22,18 @@ def to_one_class_batch(batch: Dict[str, Tuple[torch.Tensor, torch.Tensor]],
     support_inputs, support_labels = batch['train']
     query_inputs, query_labels = batch['test']
 
+    if len(support_inputs.shape) == 4:
+        support_inputs = support_inputs.unsqueeze(0)
+        support_labels = support_labels.unsqueeze(0)
+
+        query_inputs = query_inputs.unsqueeze(0)
+        query_labels = query_labels.unsqueeze(0)
+
     support_inputs = support_inputs[:, :shot]
     support_labels = support_labels[:, 0]
 
-    # TODO: accuracy-wise sampling: get half of the query size from the same \\
-    # class, divide the remaining examples among the other classes
+    # TODO: accuracy-wise sampling: get half of the query size from the
+    # same class, divide the remaining examples among the other classes
 
     query_labels = query_labels.eq(
         support_labels.unsqueeze(-1).expand_as(query_labels)).long()
@@ -63,8 +72,8 @@ def evaluate(model,
             break
     model.train(True)
 
-    mean = 100 * np.mean(accs)
-    std = 100 * np.std(accs)
+    mean = np.mean(accs)
+    std = np.std(accs)
     ci95 = 1.96 * std / np.sqrt(len(accs))
 
     return mean, ci95
@@ -74,13 +83,10 @@ def get_dataset(dataset_id: str,
                 folder: str,
                 shot: int,
                 query_size: int,
-                batch_size: int,
                 shuffle: bool,
                 train: bool = False,
                 val: bool = False,
-                test: bool = False
-                ) -> Iterable[Dict[str, Tuple[torch.Tensor, torch.Tensor]]]:
-    """TODO"""
+                test: bool = False) -> CombinationMetaDataset:
     datasets = {
         'omniglot': omniglot,
         'miniimagenet': miniimagenet,
@@ -101,8 +107,77 @@ def get_dataset(dataset_id: str,
                                    meta_test=test,
                                    test_shots=query_size // 2,
                                    download=True)
+    return dataset
+
+
+def get_dataset_loader(
+        dataset_id: str,
+        folder: str,
+        shot: int,
+        query_size: int,
+        batch_size: int,
+        shuffle: bool,
+        train: bool = False,
+        val: bool = False,
+        test: bool = False
+) -> Iterable[Dict[str, Tuple[torch.Tensor, torch.Tensor]]]:
+    """TODO"""
+    dataset = get_dataset(dataset_id, folder, shot, query_size, shuffle, train,
+                          val, test)
     loader = BatchMetaDataLoader(dataset,
                                  batch_size=batch_size,
                                  shuffle=shuffle)
 
     return loader
+
+
+def collate_task(task):
+    return default_collate([task[idx] for idx in range(len(task))])
+
+
+def auc(model,
+        dataset: CombinationMetaDataset,
+        episodes_per_class: int,
+        shot: int,
+        device: Optional[str] = None) -> Tuple[List[float], List[float]]:
+    """Compute the mean and standard deviation Area Under the Curve (AUC)"""
+    model.train(False)
+
+    auc_means: List[float] = []
+    auc_stds: List[float] = []
+    n_classes = len(dataset.dataset)
+    classes = range(n_classes)
+
+    for i in classes:
+        aucs: List[float] = []
+        for _ in range(episodes_per_class):
+            probs: List[float] = []
+            labels: List[int] = []
+            for j in classes:
+                if i != j:
+                    batch = dataset[i, j]
+                    batch['train'] = collate_task(batch['train'])
+                    batch['test'] = collate_task(batch['test'])
+                    (support_inputs, query_inputs,
+                     query_labels) = to_one_class_batch(batch, shot)
+
+                    if device:
+                        support_inputs = support_inputs.to(device=device)
+                        query_inputs = query_inputs.to(device=device)
+
+                    batch_probs = model.infer(
+                        support_inputs, query_inputs).detach().cpu().numpy()
+                    probs.extend(batch_probs[0])
+                    labels.extend(query_labels[0].numpy())
+
+            auc = roc_auc_score(labels, probs)
+            aucs.append(auc)
+
+        mean = np.mean(aucs)
+        std = np.std(aucs)
+
+        auc_means.append(mean)
+        auc_stds.append(std)
+
+    model.train(True)
+    return auc_means, auc_stds
