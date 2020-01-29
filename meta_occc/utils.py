@@ -49,27 +49,29 @@ def evaluate(model,
     """TODO"""
     model.train(False)
     accs: List[float] = []
-    for val_batch in loader:
-        (support_inputs, query_inputs,
-         query_labels) = to_one_class_batch(val_batch, shot)
+    while len(accs) < total_episodes:
+        for val_batch in loader:
+            (support_inputs, query_inputs,
+             query_labels) = to_one_class_batch(val_batch, shot)
 
-        if device:
-            support_inputs = support_inputs.to(device=device)
-            query_inputs = query_inputs.to(device=device)
-            query_labels = query_labels.to(device=device)
+            if device:
+                support_inputs = support_inputs.to(device=device)
+                query_inputs = query_inputs.to(device=device)
+                query_labels = query_labels.to(device=device)
 
-        probs = model.infer(support_inputs, query_inputs)
-        preds = (probs >= 0.5).long()
-        correct = preds.eq(query_labels)
-        batch_accs = torch.mean(correct.float(), dim=1).detach().cpu().numpy()
+            probs = model.infer(support_inputs, query_inputs)
+            preds = (probs >= 0.5).long()
+            correct = preds.eq(query_labels)
+            batch_accs = torch.mean(correct.float(),
+                                    dim=1).detach().cpu().numpy()
 
-        episodes_so_far = len(accs)
-        if episodes_so_far + len(batch_accs) < total_episodes:
-            accs.extend(batch_accs)
-        else:
-            rem = total_episodes - episodes_so_far
-            accs.extend(batch_accs[:rem])
-            break
+            episodes_so_far = len(accs)
+            if episodes_so_far + len(batch_accs) < total_episodes:
+                accs.extend(batch_accs)
+            else:
+                rem = total_episodes - episodes_so_far
+                accs.extend(batch_accs[:rem])
+                break
     model.train(True)
 
     mean = np.mean(accs)
