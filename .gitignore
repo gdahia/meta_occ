@@ -1,2 +1,4 @@
 .mypy_cache
 *.pth
+*.txt
+data/

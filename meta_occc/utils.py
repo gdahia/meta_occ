@@ -169,6 +169,7 @@ def auc(model,
 
                     batch_probs = model.infer(
                         support_inputs, query_inputs).detach().cpu().numpy()
+                    # TODO: replace with unsqueeze to improve clarity?
                     probs.extend(batch_probs[0])
                     labels.extend(query_labels[0].numpy())
 
