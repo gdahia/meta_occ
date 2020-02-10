@@ -1,0 +1,20 @@
+-i https://pypi.org/simple
+entrypoints==0.3
+flake8==3.7.9
+future==0.18.2
+importlib-metadata==0.23 ; python_version < '3.8'
+jedi==0.15.1
+mccabe==0.6.1
+more-itertools==7.2.0
+mypy-extensions==0.4.3
+mypy==0.740
+parso==0.5.1
+pluggy==0.13.0
+pycodestyle==2.5.0
+pyflakes==2.1.1
+python-jsonrpc-server==0.2.0
+python-language-server==0.30.0
+typed-ast==1.4.0
+typing-extensions==3.7.4.1
+yapf==0.28.0
+zipp==0.6.0
