@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from meta_occc.models import EmbeddingNet, ResNet12
+from meta_occc.models import EmbeddingNet
 from meta_occc.methods import OneClassPrototypicalNet, MetaSVDD
 from meta_occc import utils
 
@@ -23,13 +23,7 @@ def train(args):
                                           val=True)
 
     channels = 1 if args.dataset == 'omniglot' else 3
-    if args.model == 'embedding':
-        model = EmbeddingNet(channels, 64)
-    elif args.model == 'resnet12':
-        model = ResNet12(channels)
-    else:
-        raise KeyError(f'Unsupported model "{args.model}.'
-                       'Options are "embedding" and "resnet12".')
+    model = EmbeddingNet(channels, 64)
 
     if args.method == 'meta_svdd':
         model = MetaSVDD(model)
@@ -104,11 +98,6 @@ def parse_args():
         default='omniglot',
         choices=('omniglot', 'miniimagenet', 'tieredimagenet', 'cifar_fs'),
         help='Dataset in which to train the model (Default: "omniglot").')
-    parser.add_argument('--model',
-                        type=str,
-                        default='embedding',
-                        choices=('embedding', 'resnet12'),
-                        help='Model architecture (Default: "embedding").')
     parser.add_argument(
         '--method',
         type=str,
@@ -146,13 +135,9 @@ def parse_args():
         type=str,
         default='model.pth',
         help='Path in which to save model (Default: "model.pth").')
-    parser.add_argument('--use_cuda',
-                        action='store_true',
-                        help='Use CUDA if available.')
 
     args = parser.parse_args()
-    args.device = torch.device(
-        'cuda' if args.use_cuda and torch.cuda.is_available() else 'cpu')
+    args.device = torch.device('cpu')
 
     return args
 

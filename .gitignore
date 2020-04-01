@@ -1,4 +1,6 @@
 .mypy_cache
 *.pth
 *.txt
+env/
 data/
+*.pyc

@@ -5,7 +5,6 @@ from qpth.qp import QPFunction
 
 
 def batch_svdd(inputs: torch.Tensor, eps: float) -> torch.Tensor:
-    """TODO"""
     shot = inputs.shape[1]
 
     kernel_matrices = torch.bmm(inputs, inputs.transpose(1, 2))
@@ -33,7 +32,6 @@ def batch_svdd(inputs: torch.Tensor, eps: float) -> torch.Tensor:
 
 
 class MetaSVDD(nn.Module):
-    """TODO"""
     def __init__(self, embedding_net: nn.Module, eps: float = 1e-6) -> None:
         super(MetaSVDD, self).__init__()
         self._embedding_net = embedding_net
@@ -41,7 +39,6 @@ class MetaSVDD(nn.Module):
         self._loss = nn.BCEWithLogitsLoss()
 
     def forward(self, support_inputs, query_inputs):
-        """TODO"""
         support_embeddings = self._embedding_net(support_inputs)
         centers = batch_svdd(support_embeddings, self._eps)
 
@@ -52,12 +49,10 @@ class MetaSVDD(nn.Module):
 
     def loss(self, support_inputs: torch.Tensor, query_inputs: torch.Tensor,
              query_labels: torch.Tensor) -> torch.Tensor:
-        """TODO"""
         logits = self(support_inputs, query_inputs)
         return self._loss(logits, query_labels)
 
     def infer(self, support_inputs, query_inputs):
-        """TODO"""
         logits = self(support_inputs, query_inputs)
         probs = 1.0 + torch.tanh(logits)
         return probs

@@ -14,11 +14,9 @@ from torchmeta.datasets.helpers import (
 from torchmeta.utils.data import BatchMetaDataLoader, CombinationMetaDataset
 
 
-# TODO: create test for `to_one_class_batch`
 def to_one_class_batch(batch: Dict[str, Tuple[torch.Tensor, torch.Tensor]],
                        shot: int
                        ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """TODO"""
     support_inputs, support_labels = batch['train']
     query_inputs, query_labels = batch['test']
 
@@ -32,9 +30,6 @@ def to_one_class_batch(batch: Dict[str, Tuple[torch.Tensor, torch.Tensor]],
     support_inputs = support_inputs[:, :shot]
     support_labels = support_labels[:, 0]
 
-    # TODO: accuracy-wise sampling: get half of the query size from the
-    # same class, divide the remaining examples among the other classes
-
     query_labels = query_labels.eq(
         support_labels.unsqueeze(-1).expand_as(query_labels)).long()
 
@@ -46,7 +41,6 @@ def evaluate(model,
              total_episodes: int,
              shot: int,
              device: Optional[str] = None) -> Tuple[float, float]:
-    """TODO"""
     model.train(False)
     accs: List[float] = []
     while len(accs) < total_episodes:
@@ -123,7 +117,6 @@ def get_dataset_loader(
         val: bool = False,
         test: bool = False
 ) -> Iterable[Dict[str, Tuple[torch.Tensor, torch.Tensor]]]:
-    """TODO"""
     dataset = get_dataset(dataset_id, folder, shot, query_size, shuffle, train,
                           val, test)
     loader = BatchMetaDataLoader(dataset,
@@ -142,7 +135,6 @@ def auc(model,
         episodes_per_class: int,
         shot: int,
         device: Optional[str] = None) -> Tuple[List[float], List[float]]:
-    """Compute the mean and standard deviation Area Under the Curve (AUC)"""
     model.train(False)
 
     auc_means: List[float] = []
@@ -169,7 +161,6 @@ def auc(model,
 
                     batch_probs = model.infer(
                         support_inputs, query_inputs).detach().cpu().numpy()
-                    # TODO: replace with unsqueeze to improve clarity?
                     probs.extend(batch_probs[0])
                     labels.extend(query_labels[0].numpy())
 
