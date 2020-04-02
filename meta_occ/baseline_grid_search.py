@@ -1,7 +1,7 @@
 import numpy as np
 
-from meta_occc.methods import PCAOneClassSVM
-from meta_occc import utils
+from meta_occ.methods import PCAOneClassSVM
+from meta_occ import utils
 
 
 def grid_search(args):

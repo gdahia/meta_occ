@@ -33,14 +33,14 @@ Prototypical Network", first we must train a model for each. To do that,
 inside the virtual enviroment, run
 
 ```bash
-python3 -m meta_occc.train data/ --dataset $dataset --method $method
+python3 -m meta_occ.train data/ --dataset $dataset --method $method
 ```
 
 and replace `$dataset` with either `omniglot` or `cifar_fs`, and `$method` with
 either `meta_svdd` or `protonet`. The trained model will be saved in a file
 called `model.pth`.
 
-The full list of possible arguments for `meta_occc.train` is
+The full list of possible arguments for `meta_occ.train` is
 
 ```bash
 usage: train.py [-h]
@@ -80,7 +80,7 @@ optional arguments:
 To reproduce the results in the last column of table 1 in the paper, run:
 
 ```bash
-python3 -m meta_occc.evaluate data/ --dataset $dataset --method meta_svdd --model_path $model --metric auc
+python3 -m meta_occ.evaluate data/ --dataset $dataset --method meta_svdd --model_path $model --metric auc
 ```
 
 and replace `$dataset` with either `omniglot` or `cifar_fs`, and `$model_path`
@@ -97,14 +97,14 @@ to last column in table 1 in the paper), read the README.md file in the
 To reproduce the results in the last two columns of table 2 in the paper, run:
 
 ```bash
-python3 -m meta_occc.evaluate data/ --dataset $dataset --method $method --model_path $model --metric acc
+python3 -m meta_occ.evaluate data/ --dataset $dataset --method $method --model_path $model --metric acc
 ```
 
 and replace `$dataset` with either `omniglot` or `cifar_fs`, `$method` with
 either `meta_svdd` or `protonet`, and `$model_path` with the path to a model
 file trained in the appropriate dataset for the given method.
 
-The full list of possible arguments for `meta_occc.evaluate` is
+The full list of possible arguments for `meta_occ.evaluate` is
 
 ```bash
 usage: evaluate.py [-h]
@@ -146,5 +146,5 @@ To reproduce the results in the first column of table 2 in the paper (_i.e._
 the results for the One-class SVM with PCA), run
 
 ```bash
-python3 -m meta_occc.baseline_grid_search data/ --dataset $dataset
+python3 -m meta_occ.baseline_grid_search data/ --dataset $dataset
 ```

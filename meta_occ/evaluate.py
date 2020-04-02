@@ -1,9 +1,9 @@
 from statistics import median_low
 import torch
 
-from meta_occc.models import EmbeddingNet
-from meta_occc.methods import OneClassPrototypicalNet, MetaSVDD
-from meta_occc import utils
+from meta_occ.models import EmbeddingNet
+from meta_occ.methods import OneClassPrototypicalNet, MetaSVDD
+from meta_occ import utils
 
 
 def evaluate(args):
