@@ -1,8 +1,8 @@
 from statistics import median_low
 import torch
 
-from meta_occ.models import EmbeddingNet
-from meta_occ.methods import OneClassPrototypicalNet, MetaSVDD
+from meta_occ.models import MetaOCCModel, EmbeddingNet
+from meta_occ.layers import PrototypeLayer, SVDDLayer
 from meta_occ import utils
 
 
@@ -11,12 +11,13 @@ def evaluate(args):
     model = EmbeddingNet(channels, 64)
 
     if args.method == 'meta_svdd':
-        model = MetaSVDD(model)
+        layer = SVDDLayer(args.shot)
     elif args.method == 'protonet':
-        model = OneClassPrototypicalNet(model)
+        layer = PrototypeLayer()
     else:
         raise KeyError(f'Unsupported method "{args.method}.'
                        'Options are "meta_svdd" and "protonet".')
+    model = MetaOCCModel(EmbeddingNet(channels, 64), layer)
     model.load_state_dict(torch.load(args.model_path,
                                      map_location=args.device))
     model.to(device=args.device)

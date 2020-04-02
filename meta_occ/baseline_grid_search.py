@@ -1,6 +1,6 @@
 import numpy as np
 
-from meta_occ.methods import PCAOneClassSVM
+from meta_occ.pca_ocsvm import PCAOneClassSVM
 from meta_occ import utils
 
 

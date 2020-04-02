@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 
-from meta_occ.models import EmbeddingNet
-from meta_occ.methods import OneClassPrototypicalNet, MetaSVDD
+from meta_occ.models import MetaOCCModel, EmbeddingNet
+from meta_occ.layers import PrototypeLayer, SVDDLayer
 from meta_occ import utils
 
 
@@ -23,16 +23,17 @@ def train(args):
                                           val=True)
 
     channels = 1 if args.dataset == 'omniglot' else 3
-    model = EmbeddingNet(channels, 64)
-
     if args.method == 'meta_svdd':
-        model = MetaSVDD(model)
+        layer = SVDDLayer(args.shot)
     elif args.method == 'protonet':
-        model = OneClassPrototypicalNet(model)
+        layer = PrototypeLayer()
     else:
         raise KeyError(f'Unsupported method "{args.method}.'
                        'Options are "meta_svdd" and "protonet".')
+
+    model = MetaOCCModel(EmbeddingNet(channels, 64), layer)
     model.to(device=args.device)
+    loss = torch.nn.BCEWithLogitsLoss()
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
@@ -40,8 +41,7 @@ def train(args):
     best_lb = 0.
     best_mean = 0.
     faults = 0
-    training = True
-    while training:
+    while faults < args.patience:
         for batch in train_loader:
             (support_inputs, query_inputs,
              query_labels) = utils.to_one_class_batch(batch, args.shot)
@@ -50,20 +50,20 @@ def train(args):
             query_inputs = query_inputs.to(device=args.device)
             query_labels = query_labels.to(device=args.device)
 
-            loss = model.loss(support_inputs, query_inputs,
-                              query_labels.float())
+            loss_val = loss(model(support_inputs, query_inputs),
+                            query_labels.float())
             optimizer.zero_grad()
-            loss.backward()
+            loss_val.backward()
             optimizer.step()
 
             if step % 10 == 0:
-                print(f'Step {step}, loss = {loss.item()}')
+                print(f'Step {step}, loss = {loss_val.item()}')
 
             if step % 100 == 0:
                 mean, ci95 = utils.evaluate(model, val_loader,
                                             args.val_episodes, args.shot,
                                             args.device)
-                print(f'Accuracy = {mean:.2f} ± {ci95:.2f}%')
+                print(f'Accuracy = {100*mean:.2f} ± {100*ci95:.2f}%')
                 lb = mean - ci95
                 if lb > best_lb or (np.isclose(lb, best_lb)
                                     and mean > best_mean):
@@ -79,7 +79,6 @@ def train(args):
                         ci95 = best_mean - best_lb
                         print('Training finished.'
                               f' Best = {best_mean:.2f} ± {ci95:.2f}%')
-                        training = False
                         break
 
             step += 1
