@@ -78,7 +78,7 @@ def train(args):
                     if faults >= args.patience:
                         ci95 = best_mean - best_lb
                         print('Training finished.'
-                              f' Best = {best_mean:.2f} ± {ci95:.2f}%')
+                              f' Best = {100*best_mean:.2f} ± {100*ci95:.2f}%')
                         break
 
             step += 1
