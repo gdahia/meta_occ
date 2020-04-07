@@ -33,7 +33,6 @@ def to_one_class_batch(batch, shot):
 
 
 def evaluate(model, loader, total_episodes, shot, device=None):
-    model.train(False)
     accs = []
     while len(accs) < total_episodes:
         for val_batch in loader:
@@ -58,7 +57,6 @@ def evaluate(model, loader, total_episodes, shot, device=None):
                 rem = total_episodes - episodes_so_far
                 accs.extend(batch_accs[:rem])
                 break
-    model.train(True)
 
     mean = np.mean(accs)
     std = np.std(accs)
@@ -121,8 +119,6 @@ def collate_task(task):
 
 
 def auc(model, dataset, episodes_per_class, shot, device):
-    model.train(False)
-
     auc_means = []
     auc_stds = []
     n_classes = len(dataset.dataset)
@@ -159,5 +155,4 @@ def auc(model, dataset, episodes_per_class, shot, device):
         auc_means.append(mean)
         auc_stds.append(std)
 
-    model.train(True)
     return auc_means, auc_stds

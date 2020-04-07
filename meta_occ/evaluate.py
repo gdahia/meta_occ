@@ -32,6 +32,8 @@ def evaluate(args):
                                                train=args.split == 'train',
                                                val=args.split == 'val',
                                                test=args.split == 'test')
+
+        model.eval()
         mean, ci95 = utils.evaluate(model, test_loader, args.episodes,
                                     args.shot, args.device)
         print(f'{args.split} accuracy = {100*mean:.2f} ± {100*ci95:.2f}%')
@@ -44,6 +46,8 @@ def evaluate(args):
                                     train=args.split == 'train',
                                     val=args.split == 'val',
                                     test=args.split == 'test')
+
+        model.eval()
         means, stds = utils.auc(model,
                                 dataset,
                                 args.episodes,

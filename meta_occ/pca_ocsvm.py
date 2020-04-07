@@ -38,6 +38,3 @@ class PCAOneClassSVM:
         preds = torch.tensor(preds)
         preds = preds.reshape(task_batch_size, -1)
         return preds
-
-    def train(self, _):
-        pass

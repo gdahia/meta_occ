@@ -60,10 +60,13 @@ def train(args):
                 print(f'Step {step}, loss = {loss_val.item()}')
 
             if step % 100 == 0:
+                model.train(False)
                 mean, ci95 = utils.evaluate(model, val_loader,
                                             args.val_episodes, args.shot,
                                             args.device)
+                model.train(True)
                 print(f'Accuracy = {100*mean:.2f} ± {100*ci95:.2f}%')
+
                 lb = mean - ci95
                 if lb > best_lb or (np.isclose(lb, best_lb)
                                     and mean > best_mean):
