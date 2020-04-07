@@ -1,5 +1,3 @@
-from typing import Dict, Iterable, List, Optional, Tuple
-
 import numpy as np
 import torch
 from torch.utils.data.dataloader import default_collate
@@ -14,9 +12,7 @@ from torchmeta.datasets.helpers import (
 from torchmeta.utils.data import BatchMetaDataLoader, CombinationMetaDataset
 
 
-def to_one_class_batch(batch: Dict[str, Tuple[torch.Tensor, torch.Tensor]],
-                       shot: int
-                       ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+def to_one_class_batch(batch, shot):
     support_inputs, support_labels = batch['train']
     query_inputs, query_labels = batch['test']
 
@@ -36,13 +32,9 @@ def to_one_class_batch(batch: Dict[str, Tuple[torch.Tensor, torch.Tensor]],
     return support_inputs, query_inputs, query_labels
 
 
-def evaluate(model,
-             loader: Iterable[Dict[str, Tuple[torch.Tensor, torch.Tensor]]],
-             total_episodes: int,
-             shot: int,
-             device: Optional[str] = None) -> Tuple[float, float]:
+def evaluate(model, loader, total_episodes, shot, device=None):
     model.train(False)
-    accs: List[float] = []
+    accs = []
     while len(accs) < total_episodes:
         for val_batch in loader:
             (support_inputs, query_inputs,
@@ -106,17 +98,15 @@ def get_dataset(dataset_id: str,
     return dataset
 
 
-def get_dataset_loader(
-        dataset_id: str,
-        folder: str,
-        shot: int,
-        query_size: int,
-        batch_size: int,
-        shuffle: bool,
-        train: bool = False,
-        val: bool = False,
-        test: bool = False
-) -> Iterable[Dict[str, Tuple[torch.Tensor, torch.Tensor]]]:
+def get_dataset_loader(dataset_id,
+                       folder,
+                       shot,
+                       query_size,
+                       batch_size,
+                       shuffle,
+                       train=False,
+                       val=False,
+                       test=False):
     dataset = get_dataset(dataset_id, folder, shot, query_size, shuffle, train,
                           val, test)
     loader = BatchMetaDataLoader(dataset,
@@ -130,23 +120,19 @@ def collate_task(task):
     return default_collate([task[idx] for idx in range(len(task))])
 
 
-def auc(model,
-        dataset: CombinationMetaDataset,
-        episodes_per_class: int,
-        shot: int,
-        device: Optional[str] = None) -> Tuple[List[float], List[float]]:
+def auc(model, dataset, episodes_per_class, shot, device):
     model.train(False)
 
-    auc_means: List[float] = []
-    auc_stds: List[float] = []
+    auc_means = []
+    auc_stds = []
     n_classes = len(dataset.dataset)
     classes = range(n_classes)
 
     for i in classes:
-        aucs: List[float] = []
+        aucs = []
         for _ in range(episodes_per_class):
-            probs: List[float] = []
-            labels: List[int] = []
+            probs = []
+            labels = []
             for j in classes:
                 if i != j:
                     batch = dataset[i, j]

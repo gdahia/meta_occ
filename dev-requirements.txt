@@ -6,8 +6,6 @@ importlib-metadata==0.23 ; python_version < '3.8'
 jedi==0.15.1
 mccabe==0.6.1
 more-itertools==7.2.0
-mypy-extensions==0.4.3
-mypy==0.740
 parso==0.5.1
 pluggy==0.13.0
 pycodestyle==2.5.0

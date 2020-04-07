@@ -5,11 +5,7 @@ import torch
 
 
 class PCAOneClassSVM:
-    def __init__(self,
-                 nu: float,
-                 gamma: float,
-                 var_retained: float = 0.95,
-                 kernel: str = 'rbf') -> None:
+    def __init__(self, nu, gamma, var_retained, kernel='rbf'):
         self._pca = PCA(n_components=var_retained)
         self._svm = OneClassSVM(kernel=kernel, nu=nu, gamma=gamma)
 
