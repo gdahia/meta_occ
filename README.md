@@ -88,9 +88,9 @@ with the path to a `meta_svdd` model file trained in the appropriate dataset.
 
 #### Deep SVDD few-shot experiment
 
-To reproduce the results for the Deep SVDD few-shot experiment (i.e. the second
-to last column in table 1 in the paper), read the README.md file in the
-`few-shot_deep-svdd` folder and follow its instructions.
+To reproduce the results for the Deep SVDD few-shot experiment (i.e. the last
+row, after the CIFAR-FS cell in table 1 in the paper), read the README.md file
+in the `few-shot_deep-svdd` folder and follow its instructions.
 
 ### Accuracy experiment
 
