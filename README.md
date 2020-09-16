@@ -1,7 +1,8 @@
 # Meta Learning for Few-Shot One-class Classification
 
-Official PyTorch implementation of "Meta Learning for Few-Shot One-class
-Classification" by _Gabriel Dahia, Maurício Pamplona Segundo_, 2020.
+Official PyTorch implementation of ["Meta Learning for Few-Shot One-class
+Classification"](https://arxiv.org/abs/2009.05353) by _Gabriel Dahia, Maurício
+Pamplona Segundo_, 2020.
 
 ## Installation
 
