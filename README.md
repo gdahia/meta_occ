@@ -94,3 +94,18 @@ the results for the One-class SVM with PCA), run
 ```bash
 python3 -m meta_occ.baseline_grid_search data/ --dataset $dataset
 ```
+
+## Citing
+
+If you find the code in this repository useful in your research, please consider citing:
+
+```
+@misc{dahia2020meta,
+    title={Meta Learning for Few-Shot One-class Classification},
+    author={Gabriel Dahia and Maurício Pamplona Segundo},
+    year={2020},
+    eprint={2009.05353},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
+```
