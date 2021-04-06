@@ -1,7 +1,21 @@
+import cvxpy as cp
 import torch
+from cvxpylayers.torch import CvxpyLayer
 from torch import nn
 
-from qpth.qp import QPFunction
+
+def svdd_qp(dim):
+    kernel_sqrt = cp.Parameter((dim, dim))
+    kernel_diag = cp.Parameter(dim)
+
+    alpha = cp.Variable(dim)
+    expr = cp.sum_squares(kernel_sqrt @ alpha) - kernel_diag.T @ alpha
+
+    objective = cp.Minimize(expr)
+    constraints = [cp.sum(alpha) == 1, alpha >= 0]
+    problem = cp.Problem(objective, constraints)
+
+    return problem, (kernel_sqrt, kernel_diag), (alpha,)
 
 
 class SVDDLayer(nn.Module):
@@ -10,25 +24,20 @@ class SVDDLayer(nn.Module):
         self._dim = dim
         self._eps = eps
 
+        problem, parameters, variables = svdd_qp(shot)
+        self._qp_layer = CvxpyLayer(problem, parameters=parameters, variables=variables)
+
     def forward(self, inputs):
-        shot = inputs.shape[1]
+        # TODO: eps?
 
         kernel_matrices = torch.bmm(inputs, inputs.transpose(1, 2))
-        kernel_matrices += self._eps * torch.eye(shot)
-        kernel_diags = torch.diagonal(kernel_matrices, dim1=-2, dim2=-1)
-        Q = 2 * kernel_matrices
-        p = -kernel_diags
-        A = torch.ones(1, shot)
-        b = torch.ones(1)
-        G = -torch.eye(shot)
-        h = torch.zeros(shot)
-        alphas = QPFunction(verbose=False)(
-            Q,
-            p,
-            G.detach(),
-            h.detach(),
-            A.detach(),
-            b.detach(),
+        kernel_matrices_sqrt = torch.cholesky(kernel_matrices)
+        # TODO: is cholesky required or can we use the more natural approach with matmul?
+        kernel_matrices_diags = torch.diagonal(kernel_matrices, dim1=-2, dim2=-1)
+        (alphas,) = self._qp_layer(
+            kernel_matrices_sqrt,
+            kernel_matrices_diags,
+            solver_args={"solve_method": "ECOS"},
         )
 
         alphas = alphas.unsqueeze(-1)
@@ -56,6 +65,6 @@ class CentersDistance(nn.Module):
         self._dim = dim
 
     def forward(self, inputs, centers):
-        logits = -torch.sum((centers.unsqueeze(1) - inputs)**2, dim=self._dim)
+        logits = -torch.sum((centers.unsqueeze(1) - inputs) ** 2, dim=self._dim)
         # if `keepdim=True` up there, remove unsqueeze here
         return logits
