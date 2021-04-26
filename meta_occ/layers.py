@@ -23,16 +23,16 @@ class SVDDLayer(nn.Module):
         super(SVDDLayer, self).__init__()
         self._dim = dim
         self._eps = eps
+        self._shot = shot
 
         problem, parameters, variables = svdd_qp(shot)
         self._qp_layer = CvxpyLayer(problem, parameters=parameters, variables=variables)
 
     def forward(self, inputs):
-        # TODO: eps?
-
         kernel_matrices = torch.bmm(inputs, inputs.transpose(1, 2))
+        kernel_matrices += self._eps * torch.eye(self._shot)
+
         kernel_matrices_sqrt = torch.cholesky(kernel_matrices)
-        # TODO: is cholesky required or can we use the more natural approach with matmul?
         kernel_matrices_diags = torch.diagonal(kernel_matrices, dim1=-2, dim2=-1)
         (alphas,) = self._qp_layer(
             kernel_matrices_sqrt,
@@ -42,8 +42,6 @@ class SVDDLayer(nn.Module):
 
         alphas = alphas.unsqueeze(-1)
         centers = torch.sum(alphas * inputs, dim=self._dim)
-        # `keepdim=True` here to avoid unsqueezing in `CentersDistance`, which
-        # could be used for vanilla protonet?
 
         return centers
 
