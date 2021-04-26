@@ -1,9 +1,10 @@
 from statistics import median_low
+
 import torch
 
-from meta_occ.models import MetaOCCModel, EmbeddingNet
-from meta_occ.layers import PrototypeLayer, SVDDLayer
 from meta_occ import utils
+from meta_occ.layers import PrototypeLayer, SVDDLayer
+from meta_occ.models import EmbeddingNet, MetaOCCModel
 
 
 def evaluate(args):
@@ -122,7 +123,8 @@ def parse_args():
                         help='Evaluation metric (Default: "acc").')
 
     args = parser.parse_args()
-    args.device = torch.device('cpu')
+    args.device = torch.device(
+        'cuda' if args.use_cuda and torch.cuda.is_available() else 'cpu')
     if not args.episodes:
         args.episodes = 10 if args.metric == 'auc' else 10_000
 
