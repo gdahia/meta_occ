@@ -44,12 +44,11 @@ called `model.pth`.
 The full list of possible arguments for `meta_occ.train` is
 
 ```bash
-usage: train.py [-h]
-                [--dataset {omniglot,miniimagenet,tieredimagenet,cifar_fs}]
-                [--method {protonet,meta_svdd}] [--shot SHOT]
-                [--batch_size BATCH_SIZE] [--query_size QUERY_SIZE]
-                [--val_episodes VAL_EPISODES] [--learning_rate LEARNING_RATE]
-                [--patience PATIENCE] [--save_path SAVE_PATH] dataset_folder
+usage: train.py [-h] [--dataset {omniglot,miniimagenet,tieredimagenet,cifar_fs}]
+                [--method {protonet,meta_svdd}] [--shot SHOT] [--batch_size BATCH_SIZE]
+                [--query_size QUERY_SIZE] [--val_episodes VAL_EPISODES] [--learning_rate LEARNING_RATE]
+                [--patience PATIENCE] [--save_path SAVE_PATH] [--use_cuda]
+                dataset_folder
 
 positional arguments:
   dataset_folder        Path to the dataset folder.
@@ -57,11 +56,9 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   --dataset {omniglot,miniimagenet,tieredimagenet,cifar_fs}
-                        Dataset in which to train the model (Default:
-                        "omniglot").
+                        Dataset in which to train the model (Default: "omniglot").
   --method {protonet,meta_svdd}
-                        Meta one-class classification method (Default:
-                        "meta_svdd").
+                        Meta one-class classification method (Default: "meta_svdd").
   --shot SHOT           Number of examples in the support set (Default: 5).
   --batch_size BATCH_SIZE
                         Number of episodes in a batch (Default: 16).
@@ -74,6 +71,7 @@ optional arguments:
   --patience PATIENCE   Early stopping patience (Default: 10).
   --save_path SAVE_PATH
                         Path in which to save model (Default: "model.pth").
+  --use_cuda            Use CUDA if available.
 ```
 
 ### AUC experiment
