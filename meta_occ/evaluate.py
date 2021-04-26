@@ -121,6 +121,9 @@ def parse_args():
                         default='acc',
                         choices=('acc', 'auc'),
                         help='Evaluation metric (Default: "acc").')
+    parser.add_argument('--use_cuda',
+                        action='store_true',
+                        help='Use CUDA if available.')
 
     args = parser.parse_args()
     args.device = torch.device(

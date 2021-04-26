@@ -137,6 +137,9 @@ def parse_args():
         type=str,
         default='model.pth',
         help='Path in which to save model (Default: "model.pth").')
+    parser.add_argument('--use_cuda',
+                        action='store_true',
+                        help='Use CUDA if available.')
 
     args = parser.parse_args()
     args.device = torch.device(
