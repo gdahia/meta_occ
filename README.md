@@ -101,12 +101,12 @@ python3 -m meta_occ.baseline_grid_search data/ --dataset $dataset
 If you find the code in this repository useful in your research, please consider citing:
 
 ```
-@misc{dahia2020meta,
+@article{dahia2021meta,
     title={Meta Learning for Few-Shot One-class Classification},
     author={Gabriel Dahia and Maurício Pamplona Segundo},
-    year={2020},
-    eprint={2009.05353},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV}
+    year = {2021},
+    journal = {AI},
+    issn = {2673-2688},
+    doi = {10.3390/ai2020012}
 }
 ```
