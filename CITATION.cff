@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you find the code in this repository useful in your research, please consider citing"
+title: "Meta Learning for Few-Shot One-class Classification"
+date-released: 2020-09-16
+authors:
+- family-names: Dahia
+  given-names: Gabriel
+- family-names: Pamplona
+  given-names: Maurício
+  name-suffix: Segundo
+
+preferred-citation:
+  type: article
+  authors:
+  - family-names: Dahia
+    given-names: Gabriel
+  - family-names: Pamplona
+    given-names: Maurício
+    name-suffix: Segundo
+  doi: "10.3390/ai2020012"
+  journal: "AI"
+  start: 195
+  end: 208
+  title: "Meta Learning for Few-Shot One-class Classification"
+  issue: 2
+  volume: 2
+  year: 2021
